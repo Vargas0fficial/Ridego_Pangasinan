@@ -8,6 +8,9 @@ import { Toasts } from '@/components/ui';
 export const metadata: Metadata = {
   title: 'RideGo Pangasinan',
   description: 'Ride Anywhere in Pangasinan. Fast, safe motorcycle rides across Dagupan, Urdaneta, Alaminos, Lingayen and more.',
+  applicationName: 'RideGo Pangasinan',
+  appleWebApp: { capable: true, title: 'RideGo Pangasinan', statusBarStyle: 'default' },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
