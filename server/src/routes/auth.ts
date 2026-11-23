@@ -7,9 +7,8 @@ import { PendingSignup } from '../models/PendingSignup';
 import { User, type UserDoc } from '../models/User';
 import { normalizePhone, publicUser, requireAuth, signToken } from '../lib/auth';
 import { HttpError, h } from '../lib/errors';
-import { sendSms } from '../lib/sms';
-import { codeMatches, hashCode, newCode, smsText } from '../lib/verification';
-
+import { deliverCode } from '../lib/sms';
+import { codeMatches, hashCode } from '../lib/verification';
 export const authRouter = Router();
 
 const limiter = rateLimit({ windowMs: 60_000, limit: 20, standardHeaders: true, legacyHeaders: false });
@@ -84,7 +83,7 @@ authRouter.post(
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
-    try {
+       try {
       await sendSms(b.phone, smsText(code));
     } catch (err) {
       await PendingSignup.deleteOne({ phone: b.phone });

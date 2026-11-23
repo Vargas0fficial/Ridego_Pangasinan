@@ -21,10 +21,11 @@ export const config = {
   fare: { base: 40, perKm: 11.5, min: 50, serviceFeeRate: 0.15 },
   dispatch: { offerSeconds: 15, wavesKm: [5, 10, 20], maxOffersPerWave: 10 },
   maxTripKm: 80,
-  sms: {
-    // 'console' logs the text instead of sending it. 'semaphore' sends real SMS through semaphore.co.
-    provider: (process.env.SMS_PROVIDER ?? 'console') as 'console' | 'semaphore',
+    sms: {
+    // 'console' logs the text instead of sending it. 'semaphore' and 'iprog' send real SMS.
+    provider: (process.env.SMS_PROVIDER ?? 'console') as 'console' | 'semaphore' | 'iprog',
     semaphoreApiKey: process.env.SEMAPHORE_API_KEY ?? '',
+    iprogApiToken: process.env.IPROG_API_TOKEN ?? '',
     senderName: process.env.SMS_SENDER_NAME ?? '',
   },
   verification: { codeTtlSeconds: 600, maxAttempts: 5, resendCooldownSeconds: 30, maxSends: 5 },
@@ -32,4 +33,7 @@ export const config = {
 
 if (config.sms.provider === 'semaphore' && !config.sms.semaphoreApiKey) {
   throw new Error('SMS_PROVIDER=semaphore needs SEMAPHORE_API_KEY');
+}
+if (config.sms.provider === 'iprog' && !config.sms.iprogApiToken) {
+  throw new Error('SMS_PROVIDER=iprog needs IPROG_API_TOKEN');
 }
