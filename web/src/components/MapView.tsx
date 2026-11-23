@@ -7,6 +7,7 @@ import { LocateFixed } from 'lucide-react';
 import { MapContainer, Marker, Polyline, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import type { LatLngT } from '@/lib/types';
 import { DEFAULT_CENTER } from '@/lib/places';
+import { motoSvg } from './ScooterIcon';
 
 export type MapPoint = { lat: number; lng: number };
 
@@ -30,8 +31,7 @@ export type MapViewProps = {
 
 const pinIcon = (drop: boolean) => L.divIcon({ className: '', html: `<div class="rg-pin${drop ? ' drop' : ''}"></div>`, iconSize: [30, 30], iconAnchor: [15, 28] });
 
-const SCOOTER =
-  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="2.5"/><circle cx="18.5" cy="17.5" r="2.5"/><path d="M8 17.5h5l3-9h-3"/><path d="M13 8.5H9"/><path d="M16 8.5l2.5 9"/></svg>';
+const SCOOTER = motoSvg(16);
 
 const riderIcon = (small: boolean) =>
   L.divIcon({ className: 'rg-live', html: `<div class="rg-rider${small ? ' small' : ''}">${SCOOTER}</div>`, iconSize: small ? [28, 28] : [36, 36], iconAnchor: small ? [14, 14] : [18, 18] });

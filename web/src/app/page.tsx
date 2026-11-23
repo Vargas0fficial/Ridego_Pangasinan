@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { Bike, MapPinned, ShieldCheck, Wallet } from 'lucide-react';
+import { MapPinned, ShieldCheck, Wallet } from 'lucide-react';
+import { ScooterIcon } from '@/components/ScooterIcon';
 import { Logo } from '@/components/Logo';
 import { useApp } from '@/context/AppContext';
 import { PLACES } from '@/lib/places';
@@ -43,7 +44,7 @@ export default function Landing() {
             <MapPinned size={20} /> Book a ride
           </Link>
           <Link href="/register?role=rider" className="btn btn-ghost">
-            <Bike size={20} /> Drive with RideGo Pangasinan
+           <ScooterIcon size={20} /> Drive with RideGo Pangasinan
           </Link>
         </div>
 
@@ -51,7 +52,7 @@ export default function Landing() {
           {[
             { icon: Wallet, t: 'Fair fares', s: '₱40 base + ₱11.50 per km' },
             { icon: ShieldCheck, t: 'Built-in safety', s: 'Trip PIN, live trip link, SOS' },
-            { icon: Bike, t: 'Live tracking', s: 'Watch your rider on the map' },
+            { icon: ScooterIcon, t: 'Live tracking', s: 'Watch your rider on the map' },
           ].map(({ icon: Icon, t, s }) => (
             <li key={t} className="card">
               <Icon size={22} className="text-primary" />
