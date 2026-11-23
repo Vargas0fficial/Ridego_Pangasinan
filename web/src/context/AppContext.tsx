@@ -102,7 +102,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!userId) return;
     const token = tokenStore.get();
     if (!token) return;
-    const s = io(API_URL, { auth: { token }, transports: ['websocket', 'polling'], reconnectionDelayMax: 5000 });
+    const s = io(API_URL, { auth: { token }, transports: ['polling', 'websocket'], reconnectionDelayMax: 5000 });
     setSocket(s);
 
     const resync = async () => {
