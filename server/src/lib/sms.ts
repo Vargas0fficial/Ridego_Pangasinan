@@ -69,7 +69,7 @@ async function sendIprogOtp(phone: string): Promise<string> {
  */
 export async function deliverCode(phone: string): Promise<string> {
   if (config.sms.provider === 'iprog') return sendIprogOtp(phone);
-      const code = await deliverCode(b.phone);
+  const code = newCode();
   await sendSms(phone, smsText(code));
   return code;
 }

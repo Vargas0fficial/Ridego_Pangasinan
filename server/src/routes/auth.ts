@@ -9,6 +9,7 @@ import { normalizePhone, publicUser, requireAuth, signToken } from '../lib/auth'
 import { HttpError, h } from '../lib/errors';
 import { deliverCode } from '../lib/sms';
 import { codeMatches, hashCode } from '../lib/verification';
+
 export const authRouter = Router();
 
 const limiter = rateLimit({ windowMs: 60_000, limit: 20, standardHeaders: true, legacyHeaders: false });
@@ -65,7 +66,7 @@ authRouter.post(
     if (await User.exists({ phone: b.phone })) {
       throw new HttpError(409, 'This number is already registered. Please log in instead.');
     }
-    const code = newCode();
+    const code = await deliverCode(b.phone);
     const now = new Date();
     await PendingSignup.findOneAndUpdate(
       { phone: b.phone },
@@ -83,12 +84,6 @@ authRouter.post(
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
-       try {
-      await sendSms(b.phone, smsText(code));
-    } catch (err) {
-      await PendingSignup.deleteOne({ phone: b.phone });
-      throw err;
-    }
     res.status(202).json(challenge(b.phone));
   }),
 );
@@ -140,7 +135,7 @@ authRouter.post(
     if (wait > 0) throw new HttpError(429, `Please wait ${wait}s before asking for another code.`);
     if (pending.sendCount >= maxSends) throw new HttpError(429, 'Too many codes requested. Please try again later.');
 
-    const code = newCode();
+    const code = await deliverCode(b.phone);
     const now = new Date();
     pending.codeHash = hashCode(b.phone, code);
     pending.attempts = 0;
@@ -148,7 +143,6 @@ authRouter.post(
     pending.lastSentAt = now;
     pending.expiresAt = new Date(now.getTime() + codeTtlSeconds * 1000);
     await pending.save();
-    await sendSms(b.phone, smsText(code));
     res.status(202).json(challenge(b.phone));
   }),
 );
