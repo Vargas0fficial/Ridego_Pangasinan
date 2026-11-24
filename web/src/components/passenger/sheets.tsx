@@ -1,6 +1,7 @@
 'use client';
 
 import { Banknote, MessageCircle, Phone, ShieldCheck } from 'lucide-react';
+import { useApp } from '@/context/AppContext';
 import { fmtKm, peso } from '@/lib/format';
 import type { Place, Quote, Ride } from '@/lib/types';
 import { QUICK_DESTINATIONS, toPlace } from '@/lib/places';
@@ -156,6 +157,7 @@ export function TripSheet({
   onChat: () => void;
   onCancel: () => void;
 }) {
+  const { unreadChat } = useApp();
   const rider = ride.rider;
   if (!rider) return null;
   return (
@@ -204,6 +206,7 @@ export function TripSheet({
       <div className="mt-3 flex gap-2.5">
         <button className="btn btn-soft btn-sm" onClick={onChat}>
           <MessageCircle size={18} /> Message
+          {unreadChat > 0 && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-amber px-1.5 text-[11px] font-extrabold text-black">{unreadChat}</span>}
         </button>
         {rider.phone && (
           <a className="btn btn-soft btn-sm" href={`tel:${rider.phone}`}>

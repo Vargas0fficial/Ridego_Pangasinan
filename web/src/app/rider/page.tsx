@@ -18,7 +18,7 @@ import { useRiderGps } from '@/lib/riderHooks';
 type Tab = 'home' | 'requests' | 'active' | 'earnings' | 'profile';
 
 export default function RiderPage() {
-  const { user, ready, ride, offers, socket, setLivePos } = useApp();
+  const { user, ready, ride, offers, socket, setLivePos, unreadChat } = useApp();
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('home');
 
@@ -50,7 +50,7 @@ export default function RiderPage() {
   const nav: NavItem<Tab>[] = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'requests', label: 'Requests', icon: Inbox, badge: offers.length || undefined },
-    { id: 'active', label: 'Active Ride', icon: Car, badge: hasRide ? 1 : undefined },
+    { id: 'active', label: 'Active Ride', icon: Car, badge: unreadChat || (hasRide ? 1 : undefined) },
     { id: 'earnings', label: 'Earnings', icon: Wallet },
     { id: 'profile', label: 'Profile', icon: User },
   ];

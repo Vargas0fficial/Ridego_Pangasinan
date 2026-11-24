@@ -11,12 +11,18 @@ const QUICK_PASSENGER = ["I'm here na po", 'Pa-wait po, palabas na ako', 'Saan p
 const QUICK_RIDER = ['Malapit na po ako', 'Nandito na po ako sa pickup', 'Saan po kayo exactly?'];
 
 export function ChatPanel({ ride }: { ride: Ride }) {
-  const { user, socket, setRide, fail } = useApp();
+  const { user, socket, setRide, fail, chatViewing } = useApp();
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const me = user?.role ?? 'passenger';
   const open = ['accepted', 'arrived', 'ongoing'].includes(ride.status);
+
+  // While this panel is on screen, new messages are read straight away and do not raise an alert.
+  useEffect(() => {
+    chatViewing(true);
+    return () => chatViewing(false);
+  }, [chatViewing]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });

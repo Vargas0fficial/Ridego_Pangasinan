@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import { API_URL, ApiError, api, tokenStore } from '@/lib/api';
+import { chatAlert } from '@/lib/alert';
 import type { ChatMessage, Offer, Ride, User } from '@/lib/types';
 
 type Live = { lat: number; lng: number };
@@ -15,6 +16,10 @@ type Ctx = {
   socket: Socket | null;
   ride: Ride | null;
   offers: Offer[];
+  /** Chat messages from the other person that have not been seen yet. */
+  unreadChat: number;
+  /** The chat screen calls this with true when it appears and false when it goes away. */
+  chatViewing: (on: boolean) => void;
   /** Latest rider position for the ride in view (own GPS for riders, streamed for passengers). */
   livePos: Live | null;
   setLivePos: (p: Live | null) => void;
@@ -47,10 +52,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [livePos, setLivePos] = useState<Live | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [unreadChat, setUnreadChat] = useState(0);
+  const viewing = useRef(0);
   const rideRef = useRef<Ride | null>(null);
   const toastId = useRef(0);
 
+  const chatViewing = useCallback((on: boolean) => {
+    viewing.current = Math.max(0, viewing.current + (on ? 1 : -1));
+    if (on) setUnreadChat(0);
+  }, []);
+
   const setRide = useCallback((r: Ride | null) => {
+    // a different ride (or none) starts with a clean unread count
+    if (!r || r.id !== rideRef.current?.id) setUnreadChat(0);
     rideRef.current = r;
     setRideState(r);
   }, []);
@@ -149,6 +163,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!cur || cur.id !== m.rideId) return;
       if (cur.messages.some((x) => x.at === m.at && x.text === m.text && x.from === m.from)) return;
       setRide({ ...cur, messages: [...cur.messages, { from: m.from, text: m.text, at: m.at }] });
+      // A message from the other person while the chat is not on screen: badge, toast, chime and buzz.
+      if (m.from !== role && (viewing.current === 0 || document.hidden)) {
+        const who = (m.from === 'rider' ? cur.rider?.name : cur.passenger?.name)?.split(' ')[0] ?? 'New message';
+        setUnreadChat((n) => n + 1);
+        toast(`${who}: ${m.text.length > 70 ? m.text.slice(0, 70) + '…' : m.text}`);
+        chatAlert();
+      }
     });
 
     return () => {
@@ -159,6 +180,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, role]);
+
+  // Tab title shows the unread count when the app is open in a background tab.
+  useEffect(() => {
+    document.title = unreadChat > 0 ? `(${unreadChat}) New message · RideGo Pangasinan` : 'RideGo Pangasinan';
+  }, [unreadChat]);
 
   const signIn = useCallback((token: string, u: User) => {
     tokenStore.set(token);
@@ -181,6 +207,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       socket,
       ride,
       offers,
+      unreadChat,
+      chatViewing,
       livePos,
       setLivePos,
       signIn,
@@ -197,7 +225,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toasts,
       fail,
     }),
-    [user, ready, connected, socket, ride, offers, livePos, signIn, signOut, setRide, sync, toast, toasts, fail],
+    [user, ready, connected, socket, ride, offers, unreadChat, chatViewing, livePos, signIn, signOut, setRide, sync, toast, toasts, fail],
   );
 
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;

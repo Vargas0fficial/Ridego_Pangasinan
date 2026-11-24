@@ -25,7 +25,7 @@ const NAV: NavItem<Tab>[] = [
 ];
 
 export default function PassengerPage() {
-  const { user, ready, ride } = useApp();
+  const { user, ready, ride, unreadChat } = useApp();
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('home');
   const [dest, setDest] = useState<Place | null>(null);
@@ -69,7 +69,7 @@ export default function PassengerPage() {
         {tab === 'messages' && <MessagesTab />}
         {tab === 'profile' && <ProfileTab />}
       </main>
-      <BottomNav items={NAV} active={tab} onChange={setTab} />
+      <BottomNav items={NAV.map((i) => (i.id === 'messages' ? { ...i, badge: unreadChat || undefined } : i))} active={tab} onChange={setTab} />
     </div>
   );
 }

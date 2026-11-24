@@ -28,7 +28,7 @@ export function BottomNav<T extends string>({ items, active, onChange }: { items
                 </span>
                 {label}
                 {!!badge && (
-                  <span className="absolute right-[24%] top-1.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-danger px-1 text-[10px] font-bold text-white">
+                  <span className="absolute right-[24%] top-1.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-amber px-1 text-[10px] font-extrabold text-black">
                     {badge}
                   </span>
                 )}

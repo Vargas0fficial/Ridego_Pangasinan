@@ -13,7 +13,7 @@ import { RouteLines } from '../RideCards';
 import { Avatar, EmptyState, Modal, Rating, Sheet, Spinner } from '../ui';
 
 export function ActiveTab() {
-  const { ride, livePos, clearRide, fail } = useApp();
+  const { ride, livePos, clearRide, fail, unreadChat } = useApp();
   const [busy, setBusy] = useState(false);
   const [pin, setPin] = useState('');
   const [chat, setChat] = useState(false);
@@ -125,6 +125,7 @@ export function ActiveTab() {
             <div className="flex gap-2.5">
               <button className="btn btn-soft btn-sm" onClick={() => setChat(true)}>
                 <MessageCircle size={18} /> Message
+                {unreadChat > 0 && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-amber px-1.5 text-[11px] font-extrabold text-black">{unreadChat}</span>}
               </button>
               {ride.passenger?.phone && (
                 <a className="btn btn-soft btn-sm" href={`tel:${ride.passenger.phone}`}>
