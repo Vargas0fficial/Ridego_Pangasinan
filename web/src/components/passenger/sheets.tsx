@@ -172,7 +172,7 @@ export function TripSheet({
       </div>
 
       <div className="card flex items-center gap-3">
-        <Avatar name={rider.name} />
+          <Avatar name={rider.name} photo={rider.photo} size={52} zoomable />
         <div className="min-w-0 flex-1">
           <div className="truncate font-display font-bold">{rider.name}</div>
           <Rating value={rider.rating} count={rider.completedRides} />

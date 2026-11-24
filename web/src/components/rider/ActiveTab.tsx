@@ -68,7 +68,7 @@ export function ActiveTab() {
 
           {ride.passenger && (
             <div className="card flex items-center gap-3">
-              <Avatar name={ride.passenger.name} />
+                            <Avatar name={ride.passenger.name} photo={ride.passenger.photo} size={52} zoomable />
               <div className="min-w-0 flex-1">
                 <div className="truncate font-display font-bold">{ride.passenger.name}</div>
                 <Rating value={ride.passenger.rating} />

@@ -4,6 +4,8 @@ export interface IUser {
   name: string;
   phone: string;
   email?: string;
+  /** Small JPEG/PNG/WebP data URL, resized in the browser before upload. */
+  photo?: string;
   passwordHash: string;
   role: 'passenger' | 'rider';
   ratingSum: number;
@@ -27,6 +29,7 @@ const userSchema = new Schema<IUser>(
     phone: { type: String, required: true, unique: true, trim: true },
     // optional so accounts made before email sign-up still work; sparse keeps the unique index happy
     email: { type: String, trim: true, lowercase: true, unique: true, sparse: true },
+    photo: { type: String },
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ['passenger', 'rider'], required: true, index: true },
     ratingSum: { type: Number, default: 0 },

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { LogOut, Plus, Trash2 } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Camera, LogOut, Plus, Trash2 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useApp } from '@/context/AppContext';
+import { squarePhoto } from '@/lib/image';
 import type { User } from '@/lib/types';
 import { Avatar, Rating, Spinner } from './ui';
 
@@ -11,6 +12,8 @@ export function ProfileTab() {
   const { user, setUser, signOut, fail, toast } = useApp();
   const [contacts, setContacts] = useState(user?.trustedContacts ?? []);
   const [busy, setBusy] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   if (!user) return null;
   const dirty = JSON.stringify(contacts) !== JSON.stringify(user.trustedContacts);
 
@@ -29,16 +32,74 @@ export function ProfileTab() {
     }
   };
 
+  const pickPhoto = async (file: File | undefined) => {
+    if (!file) return;
+    setPhotoBusy(true);
+    try {
+      const photo = await squarePhoto(file);
+      const r = await api<{ user: User }>('/api/auth/photo', { method: 'PUT', body: { photo } });
+      setUser(r.user);
+      toast('Profile photo updated');
+    } catch (e) {
+      fail(e);
+    } finally {
+      setPhotoBusy(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+
+  const removePhoto = async () => {
+    setPhotoBusy(true);
+    try {
+      const r = await api<{ user: User }>('/api/auth/photo', { method: 'DELETE' });
+      setUser(r.user);
+      toast('Profile photo removed');
+    } catch (e) {
+      fail(e);
+    } finally {
+      setPhotoBusy(false);
+    }
+  };
+
   return (
     <div className="mx-auto h-full max-w-xl space-y-4 overflow-y-auto p-4">
       <div className="card flex items-center gap-4 !p-4">
-        <Avatar name={user.name} size={64} />
-        <div>
-          <div className="font-display text-xl font-extrabold">{user.name}</div>
+        <div className="relative flex-none">
+          <Avatar name={user.name} photo={user.photo} size={72} />
+          <button
+            className="absolute -bottom-1 -right-1 grid h-8 w-8 place-items-center rounded-full border-2 border-surface bg-primary text-primary-on disabled:opacity-60"
+            onClick={() => fileRef.current?.click()}
+            disabled={photoBusy}
+            aria-label={user.photo ? 'Change profile photo' : 'Add profile photo'}
+          >
+            {photoBusy ? <Spinner size={14} /> : <Camera size={16} />}
+          </button>
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => pickPhoto(e.target.files?.[0])} />
+        </div>
+        <div className="min-w-0">
+          <div className="truncate font-display text-xl font-extrabold">{user.name}</div>
           <div className="text-sm text-muted">{user.phone}</div>
           <Rating value={user.rating} count={user.ratingCount} />
         </div>
       </div>
+
+      {!user.photo ? (
+        <section className="card !bg-primary-soft !p-4">
+          <h3 className="font-display font-bold text-primary-strong">Add your photo</h3>
+          <p className="mt-1 text-[13px] text-primary-strong">
+            {user.role === 'rider'
+              ? 'Passengers see your photo before they ride, so they know it is really you and not someone pretending to be your rider.'
+              : 'Your rider sees your photo when they pick you up, so they know they are meeting the right person.'}
+          </p>
+          <button className="btn btn-sm mt-3" onClick={() => fileRef.current?.click()} disabled={photoBusy}>
+            {photoBusy ? <Spinner /> : <Camera size={18} />} Choose a photo
+          </button>
+        </section>
+      ) : (
+        <button className="btn btn-ghost btn-sm" onClick={removePhoto} disabled={photoBusy}>
+          <Trash2 size={18} /> Remove photo
+        </button>
+      )}
 
       {user.role === 'rider' && user.vehicle && (
         <section className="card !p-4">

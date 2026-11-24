@@ -28,12 +28,13 @@ export function serializeRide(r: any, view: View) {
     pin: view === 'passenger' && ['accepted', 'arrived'].includes(r.status) ? r.pin : undefined,
     shareToken: view === 'passenger' ? r.shareToken : undefined,
     passenger: p
-      ? { id: String(p._id), name: p.name, rating: ratingOf(p), phone: view === 'rider' && live ? p.phone : undefined }
+      ? { id: String(p._id), name: p.name, photo: p.photo ?? null, rating: ratingOf(p), phone: view === 'rider' && live ? p.phone : undefined }
       : null,
     rider: d
       ? {
           id: String(d._id),
           name: d.name,
+          photo: d.photo ?? null,
           rating: ratingOf(d),
           phone: view === 'passenger' && live ? d.phone : undefined,
           vehicle: d.vehicle ? { model: d.vehicle.model, plate: d.vehicle.plate, color: d.vehicle.color } : null,

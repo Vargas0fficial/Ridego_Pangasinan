@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Star } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useApp } from '@/context/AppContext';
+import { skipRating } from '@/lib/dismissed';
 import { peso } from '@/lib/format';
 import type { Ride } from '@/lib/types';
 import { Avatar, Spinner } from './ui';
@@ -75,7 +76,7 @@ export function RatingForm({ ride, onDone }: { ride: Ride; onDone: () => void })
         <>
           {other && (
             <div className="flex flex-col items-center gap-2">
-              <Avatar name={other.name} size={56} />
+              <Avatar name={other.name} photo={other.photo} size={56} />
               <div className="font-display font-bold">How was {isPassenger ? other.name : other.name.split(' ')[0]}?</div>
               <div className="flex gap-1" role="radiogroup" aria-label="Star rating">
                 {[1, 2, 3, 4, 5].map((n) => (
@@ -109,7 +110,13 @@ export function RatingForm({ ride, onDone }: { ride: Ride; onDone: () => void })
           <button className="btn" onClick={submit} disabled={busy}>
             {busy ? <Spinner /> : 'Submit rating'}
           </button>
-          <button className="btn btn-ghost" onClick={onDone}>
+          <button
+            className="btn btn-ghost"
+            onClick={() => {
+              skipRating(ride.id);
+              onDone();
+            }}
+          >
             Skip for now
           </button>
         </>

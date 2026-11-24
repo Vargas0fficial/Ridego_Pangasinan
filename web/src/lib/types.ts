@@ -8,6 +8,7 @@ export type User = {
   name: string;
   phone: string;
   email?: string | null;
+  photo?: string | null;
   role: Role;
   rating: number;
   ratingCount: number;
@@ -38,8 +39,8 @@ export type Ride = {
   approach: { geometry: LatLngT[]; distanceKm: number; durationMin: number } | null;
   pin?: string;
   shareToken?: string;
-  passenger: { id: string; name: string; rating: number; phone?: string } | null;
-  rider: { id: string; name: string; rating: number; phone?: string; vehicle: Vehicle | null; completedRides: number } | null;
+  passenger: { id: string; name: string; photo?: string | null; rating: number; phone?: string } | null;
+  rider: { id: string; name: string; photo?: string | null; rating: number; phone?: string; vehicle: Vehicle | null; completedRides: number } | null;
   riderLocation: { lat: number; lng: number } | null;
   messages: ChatMessage[];
   times: { requested?: string; accepted?: string; arrived?: string; started?: string; completed?: string; cancelled?: string };

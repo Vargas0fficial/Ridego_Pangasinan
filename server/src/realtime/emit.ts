@@ -7,11 +7,12 @@ import { getIO } from './hub';
 
 export async function loadRide(id: string | Types.ObjectId): Promise<any | null> {
   return Ride.findById(id)
-    .populate('passenger', 'name phone ratingSum ratingCount')
-    .populate('rider', 'name phone vehicle ratingSum ratingCount completedRides lat lng')
+    .populate('passenger', 'name phone photo ratingSum ratingCount')
+    .populate('rider', 'name phone photo vehicle ratingSum ratingCount completedRides lat lng')
     .lean();
 }
 
+/** History lists skip the photos on purpose, so 30 rides do not carry 60 images. */
 export async function loadRides(filter: Record<string, unknown>, limit = 30): Promise<any[]> {
   return Ride.find(filter as any)
     .sort({ createdAt: -1 })

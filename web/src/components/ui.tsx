@@ -30,15 +30,36 @@ export function Toasts() {
 
 export const Spinner = ({ size = 18 }: { size?: number }) => <Loader2 size={size} className="animate-spin" aria-label="Loading" />;
 
-export function Avatar({ name, size = 44 }: { name: string; size?: number }) {
+/** Profile photo when there is one, initials otherwise. With `zoomable`, tapping the photo shows it large so you can match it to the person in front of you. */
+export function Avatar({ name, size = 44, photo, zoomable = false }: { name: string; size?: number; photo?: string | null; zoomable?: boolean }) {
+  const [open, setOpen] = useState(false);
+  if (!photo) {
+    return (
+      <span
+        className="grid flex-none place-items-center rounded-full bg-primary-soft font-display font-bold text-primary-strong"
+        style={{ width: size, height: size, fontSize: size * 0.38 }}
+        aria-hidden
+      >
+        {initials(name)}
+      </span>
+    );
+  }
+  // eslint-disable-next-line @next/next/no-img-element
+  const img = <img src={photo} alt={`${name}'s photo`} width={size} height={size} className="flex-none rounded-full bg-primary-soft object-cover" style={{ width: size, height: size }} />;
+  if (!zoomable) return img;
   return (
-    <span
-      className="grid flex-none place-items-center rounded-full bg-primary-soft font-display font-bold text-primary-strong"
-      style={{ width: size, height: size, fontSize: size * 0.38 }}
-      aria-hidden
-    >
-      {initials(name)}
-    </span>
+    <>
+      <button type="button" onClick={() => setOpen(true)} className="flex-none rounded-full" aria-label={`View ${name}'s photo`}>
+        {img}
+      </button>
+      {open && (
+        <Modal title={name} onClose={() => setOpen(false)}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photo} alt={`${name}'s photo`} className="mx-auto aspect-square w-full max-w-[320px] rounded-3xl object-cover" />
+          <p className="mt-3 text-center text-sm text-muted">Check that this is the person you meet.</p>
+        </Modal>
+      )}
+    </>
   );
 }
 

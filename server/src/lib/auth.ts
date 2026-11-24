@@ -50,6 +50,7 @@ export function publicUser(u: UserDoc) {
     name: u.name,
     phone: u.phone,
     email: u.email ?? null,
+    photo: u.photo ?? null,
     role: u.role,
     rating: ratingOf(u),
     ratingCount: u.ratingCount,

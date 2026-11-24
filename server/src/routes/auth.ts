@@ -202,3 +202,36 @@ authRouter.put(
     res.json({ user: publicUser(user) });
   }),
 );
+
+
+// Profile photo: a small image resized in the browser and stored as a data URL.
+const PHOTO_MAX_CHARS = 70_000;
+const photoS = z.object({
+  photo: z
+    .string()
+    .max(PHOTO_MAX_CHARS, 'That photo is too large. Try a different one.')
+    .regex(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/, 'Please upload a JPG, PNG or WebP photo'),
+});
+
+authRouter.put(
+  '/photo',
+  requireAuth(),
+  h(async (req, res) => {
+    const b = photoS.parse(req.body);
+    const user = res.locals.user as UserDoc;
+    user.photo = b.photo;
+    await user.save();
+    res.json({ user: publicUser(user) });
+  }),
+);
+
+authRouter.delete(
+  '/photo',
+  requireAuth(),
+  h(async (_req, res) => {
+    const user = res.locals.user as UserDoc;
+    user.photo = undefined;
+    await user.save();
+    res.json({ user: publicUser(user) });
+  }),
+);

@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { io, type Socket } from 'socket.io-client';
 import { API_URL, ApiError, api, tokenStore } from '@/lib/api';
 import { chatAlert } from '@/lib/alert';
+import { isSkipped } from '@/lib/dismissed';
 import type { ChatMessage, Offer, Ride, User } from '@/lib/types';
 
 type Live = { lat: number; lng: number };
@@ -62,7 +63,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (on) setUnreadChat(0);
   }, []);
 
-  const setRide = useCallback((r: Ride | null) => {
+  const setRide = useCallback((incoming: Ride | null) => {
+    // a finished ride whose rating the user skipped stays closed, even after a reload
+    const r = incoming && incoming.status === 'completed' && isSkipped(incoming.id) ? null : incoming;
     // a different ride (or none) starts with a clean unread count
     if (!r || r.id !== rideRef.current?.id) setUnreadChat(0);
     rideRef.current = r;
