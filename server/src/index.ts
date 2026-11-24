@@ -40,10 +40,10 @@ async function main(): Promise<void> {
   await recoverState();
 
   server.listen(config.port, () => {
-    console.log(`[server] RideGo Pangasinan API listening on :${config.port}`);
-    console.log(`[server] SMS provider: ${config.sms.provider}${config.sms.provider === 'console' ? ' (codes are printed here, no real text is sent)' : ''}`);
-    if (config.isProd && config.sms.provider === 'console') {
-      console.warn('[server] WARNING: SMS_PROVIDER=console in production. Sign-up is disabled until SMS_PROVIDER=semaphore.');
+        console.log(`[server] RideGo Pangasinan API listening on :${config.port}`);
+    console.log(`[server] Mail provider: ${config.mail.provider}${config.mail.provider === 'console' ? ' (codes are printed here, no real email is sent)' : ''}`);
+    if (config.isProd && config.mail.provider === 'console') {
+      console.warn('[server] WARNING: MAIL_PROVIDER=console in production. Sign-up is disabled until MAIL_PROVIDER=brevo.');
     }
   });
 

@@ -49,6 +49,7 @@ export function publicUser(u: UserDoc) {
     id: String(u._id),
     name: u.name,
     phone: u.phone,
+    email: u.email ?? null,
     role: u.role,
     rating: ratingOf(u),
     ratingCount: u.ratingCount,

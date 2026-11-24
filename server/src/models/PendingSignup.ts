@@ -1,8 +1,9 @@
 import { Schema, model, models, type Model } from 'mongoose';
 
-/** A sign-up waiting for its SMS code. The real User is only created after the code is confirmed. */
+/** A sign-up waiting for its email code. The real User is only created after the code is confirmed. */
 export interface IPendingSignup {
   phone: string;
+  email: string;
   name: string;
   passwordHash: string;
   role: 'passenger' | 'rider';
@@ -16,6 +17,7 @@ export interface IPendingSignup {
 
 const schema = new Schema<IPendingSignup>({
   phone: { type: String, required: true, unique: true },
+  email: { type: String, required: true },
   name: { type: String, required: true },
   passwordHash: { type: String, required: true },
   role: { type: String, enum: ['passenger', 'rider'], required: true },

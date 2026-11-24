@@ -7,7 +7,7 @@ import { PendingSignup } from '../models/PendingSignup';
 import { User, type UserDoc } from '../models/User';
 import { normalizePhone, publicUser, requireAuth, signToken } from '../lib/auth';
 import { HttpError, h } from '../lib/errors';
-import { deliverCode } from '../lib/sms';
+import { deliverCode, maskEmail } from '../lib/mail';
 import { codeMatches, hashCode } from '../lib/verification';
 
 export const authRouter = Router();
@@ -23,6 +23,7 @@ const registerS = z
   .object({
     name: z.string().trim().min(2, 'Enter your full name').max(60),
     phone: phoneS,
+    email: z.string().trim().toLowerCase().email('Enter a valid email address').max(120),
     password: z.string().min(8, 'Password must be at least 8 characters').max(100),
     role: z.enum(['passenger', 'rider']),
     vehicle: z
@@ -43,35 +44,40 @@ const registerS = z
 const sendLimiter = rateLimit({ windowMs: 60_000, limit: 6, standardHeaders: true, legacyHeaders: false });
 const { codeTtlSeconds, maxAttempts, resendCooldownSeconds, maxSends } = config.verification;
 
-/** In production the console provider prints codes instead of texting them, so nobody could ever receive one. */
-const requireRealSms = () => {
-  if (config.isProd && config.sms.provider === 'console') {
+/** In production the console provider prints codes instead of emailing them, so nobody could ever receive one. */
+const requireRealMail = () => {
+  if (config.isProd && config.mail.provider === 'console') {
     throw new HttpError(503, 'Sign-up is temporarily unavailable. Please try again later.');
   }
 };
 
-const challenge = (phone: string) => ({
+const challenge = (phone: string, email: string) => ({
   phone,
+  email: maskEmail(email),
   expiresInSeconds: codeTtlSeconds,
   resendInSeconds: resendCooldownSeconds,
 });
 
-// Step 1: validate the form, park it as a pending sign-up and text a code.
+// Step 1: validate the form, park it as a pending sign-up and email a code.
 authRouter.post(
   '/register',
   sendLimiter,
   h(async (req, res) => {
-    requireRealSms();
+    requireRealMail();
     const b = registerS.parse(req.body);
     if (await User.exists({ phone: b.phone })) {
       throw new HttpError(409, 'This number is already registered. Please log in instead.');
     }
-    const code = await deliverCode(b.phone);
+    if (await User.exists({ email: b.email })) {
+      throw new HttpError(409, 'This email is already registered. Please log in instead.');
+    }
+    const code = await deliverCode(b.email);
     const now = new Date();
     await PendingSignup.findOneAndUpdate(
       { phone: b.phone },
       {
         phone: b.phone,
+        email: b.email,
         name: b.name,
         passwordHash: await bcrypt.hash(b.password, 10),
         role: b.role,
@@ -84,7 +90,7 @@ authRouter.post(
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
-    res.status(202).json(challenge(b.phone));
+    res.status(202).json(challenge(b.phone, b.email));
   }),
 );
 
@@ -111,9 +117,13 @@ authRouter.post(
     // Delete first so a double submit cannot create two accounts.
     const taken = await PendingSignup.findOneAndDelete({ phone: b.phone });
     if (!taken) throw new HttpError(400, 'This code was already used. Please log in.');
+    if (await User.exists({ $or: [{ phone: taken.phone }, { email: taken.email }] })) {
+      throw new HttpError(409, 'This number or email is already registered. Please log in instead.');
+    }
     const user = await User.create({
       name: taken.name,
       phone: taken.phone,
+      email: taken.email,
       passwordHash: taken.passwordHash,
       role: taken.role,
       vehicle: taken.role === 'rider' ? taken.vehicle : undefined,
@@ -122,12 +132,12 @@ authRouter.post(
   }),
 );
 
-// Send a fresh code for a pending sign-up.
+// Email a fresh code for a pending sign-up.
 authRouter.post(
   '/register/resend',
   sendLimiter,
   h(async (req, res) => {
-    requireRealSms();
+    requireRealMail();
     const b = z.object({ phone: phoneS }).parse(req.body);
     const pending = await PendingSignup.findOne({ phone: b.phone });
     if (!pending) throw new HttpError(400, 'Your sign-up expired. Please fill in the form again.');
@@ -135,7 +145,7 @@ authRouter.post(
     if (wait > 0) throw new HttpError(429, `Please wait ${wait}s before asking for another code.`);
     if (pending.sendCount >= maxSends) throw new HttpError(429, 'Too many codes requested. Please try again later.');
 
-    const code = await deliverCode(b.phone);
+    const code = await deliverCode(pending.email);
     const now = new Date();
     pending.codeHash = hashCode(b.phone, code);
     pending.attempts = 0;
@@ -143,7 +153,7 @@ authRouter.post(
     pending.lastSentAt = now;
     pending.expiresAt = new Date(now.getTime() + codeTtlSeconds * 1000);
     await pending.save();
-    res.status(202).json(challenge(b.phone));
+    res.status(202).json(challenge(b.phone, pending.email));
   }),
 );
 

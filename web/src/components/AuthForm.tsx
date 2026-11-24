@@ -3,14 +3,14 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
-import { ArrowLeft, MessageSquareText } from 'lucide-react';
+import { ArrowLeft, MailCheck } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useApp } from '@/context/AppContext';
 import type { Role, User } from '@/lib/types';
 import { Logo } from './Logo';
 import { Field, Spinner } from './ui';
 
-type Challenge = { phone: string; expiresInSeconds: number; resendInSeconds: number };
+type Challenge = { phone: string; email: string; expiresInSeconds: number; resendInSeconds: number };
 
 function Inner({ mode }: { mode: 'login' | 'register' }) {
   const router = useRouter();
@@ -19,6 +19,7 @@ function Inner({ mode }: { mode: 'login' | 'register' }) {
   const [role, setRole] = useState<Role>(params.get('role') === 'rider' ? 'rider' : 'passenger');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [model, setModel] = useState('');
   const [plate, setPlate] = useState('');
@@ -26,7 +27,7 @@ function Inner({ mode }: { mode: 'login' | 'register' }) {
   const [busy, setBusy] = useState(false);
   const register = mode === 'register';
 
-  // Step 2 of sign-up: enter the code that was texted.
+  // Step 2 of sign-up: enter the code that was emailed.
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [code, setCode] = useState('');
   const [resendIn, setResendIn] = useState(0);
@@ -48,7 +49,7 @@ function Inner({ mode }: { mode: 'login' | 'register' }) {
     try {
       if (register) {
         const c = await api<Challenge>('/api/auth/register', {
-          body: { name, phone, password, role, vehicle: role === 'rider' ? { model, plate, color } : undefined },
+          body: { name, phone, email, password, role, vehicle: role === 'rider' ? { model, plate, color } : undefined },
         });
         setChallenge(c);
         setCode('');
@@ -107,11 +108,11 @@ function Inner({ mode }: { mode: 'login' | 'register' }) {
           <ArrowLeft size={20} />
         </button>
         <div className="mt-6 grid h-14 w-14 place-items-center rounded-2xl bg-primary-soft text-primary-strong">
-          <MessageSquareText size={28} />
+          <MailCheck size={28} />
         </div>
-        <h1 className="mt-4 font-display text-3xl font-extrabold tracking-tight">Confirm your number</h1>
+        <h1 className="mt-4 font-display text-3xl font-extrabold tracking-tight">Confirm your email</h1>
         <p className="mt-1 text-muted">
-          We texted a 6-digit code to <span className="font-bold text-fg">{phone}</span>. It expires in {Math.round(challenge.expiresInSeconds / 60)} minutes.
+          We emailed a 6-digit code to <span className="font-bold text-fg">{challenge.email}</span>. Check your spam folder too. It expires in {Math.round(challenge.expiresInSeconds / 60)} minutes.
         </p>
 
         <form onSubmit={verify} className="mt-6 space-y-4">
@@ -173,9 +174,14 @@ function Inner({ mode }: { mode: 'login' | 'register' }) {
             <input className="input" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="Juan Dela Cruz" required />
           </Field>
         )}
-        <Field label="Mobile number" hint={register ? "We'll text you a confirmation code. Example: 09171234567" : 'Philippine number, like 09171234567'}>
+        <Field label="Mobile number" hint={register ? 'Your rider or passenger can call you on this.' : 'Philippine number, like 09171234567'}>
           <input className="input" value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" autoComplete="tel" placeholder="09XX XXX XXXX" required />
         </Field>
+        {register && (
+          <Field label="Email" hint="We'll email you a confirmation code.">
+            <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} inputMode="email" autoComplete="email" placeholder="juandelacruz@gmail.com" required />
+          </Field>
+        )}
         <Field label="Password" hint={register ? 'At least 8 characters' : undefined}>
           <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={register ? 'new-password' : 'current-password'} minLength={register ? 8 : 1} required />
         </Field>

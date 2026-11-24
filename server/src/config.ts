@@ -21,19 +21,16 @@ export const config = {
   fare: { base: 40, perKm: 11.5, min: 50, serviceFeeRate: 0.15 },
   dispatch: { offerSeconds: 15, wavesKm: [5, 10, 20], maxOffersPerWave: 10 },
   maxTripKm: 80,
-    sms: {
-    // 'console' logs the text instead of sending it. 'semaphore' and 'iprog' send real SMS.
-    provider: (process.env.SMS_PROVIDER ?? 'console') as 'console' | 'semaphore' | 'iprog',
-    semaphoreApiKey: process.env.SEMAPHORE_API_KEY ?? '',
-    iprogApiToken: process.env.IPROG_API_TOKEN ?? '',
-    senderName: process.env.SMS_SENDER_NAME ?? '',
+  mail: {
+    // 'console' prints the email instead of sending it. 'brevo' sends real email through Brevo's HTTP API.
+    provider: (process.env.MAIL_PROVIDER ?? 'console') as 'console' | 'brevo',
+    brevoApiKey: process.env.BREVO_API_KEY ?? '',
+    fromEmail: process.env.MAIL_FROM_EMAIL ?? '',
+    fromName: process.env.MAIL_FROM_NAME ?? 'RideGo Pangasinan',
   },
   verification: { codeTtlSeconds: 600, maxAttempts: 5, resendCooldownSeconds: 30, maxSends: 5 },
 };
 
-if (config.sms.provider === 'semaphore' && !config.sms.semaphoreApiKey) {
-  throw new Error('SMS_PROVIDER=semaphore needs SEMAPHORE_API_KEY');
-}
-if (config.sms.provider === 'iprog' && !config.sms.iprogApiToken) {
-  throw new Error('SMS_PROVIDER=iprog needs IPROG_API_TOKEN');
+if (config.mail.provider === 'brevo' && (!config.mail.brevoApiKey || !config.mail.fromEmail)) {
+  throw new Error('MAIL_PROVIDER=brevo needs BREVO_API_KEY and MAIL_FROM_EMAIL');
 }
