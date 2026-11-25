@@ -21,6 +21,8 @@ export interface IRide {
   fare: number;
   serviceFee: number;
   riderEarning: number;
+  /** Passenger asked for a raincoat (fare and riderEarning already include its price). */
+  raincoat: boolean;
   paymentMethod: 'cash' | 'online';
   status: RideStatus;
   pin: string;
@@ -57,6 +59,7 @@ const rideSchema = new Schema<IRide>(
     fare: { type: Number, required: true },
     serviceFee: { type: Number, required: true },
     riderEarning: { type: Number, required: true },
+    raincoat: { type: Boolean, default: false },
     paymentMethod: { type: String, enum: ['cash', 'online'], default: 'cash' },
     status: {
       type: String,

@@ -19,6 +19,7 @@ export function serializeRide(r: any, view: View) {
     fare: r.fare,
     serviceFee: r.serviceFee,
     riderEarning: r.riderEarning,
+    raincoat: !!r.raincoat,
     paymentMethod: r.paymentMethod,
     geometry: r.geometry ?? [],
     approach:

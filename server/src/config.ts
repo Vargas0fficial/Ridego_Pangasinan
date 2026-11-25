@@ -19,6 +19,13 @@ export const config = {
     .filter(Boolean),
   osrmUrl: (process.env.OSRM_URL ?? 'https://router.project-osrm.org').replace(/\/$/, ''),
   fare: { base: 40, perKm: 11.5, min: 50, serviceFeeRate: 0.15 },
+  /** Optional raincoat (kapote) the rider brings when it is raining at the pickup. The rider keeps all of it. */
+  raincoatPrice: 49,
+  weather: {
+    apiUrl: (process.env.WEATHER_API_URL ?? 'https://api.open-meteo.com/v1/forecast').replace(/\/$/, ''),
+    // For demos and testing: 'rain' always rains, 'clear' never does. Leave empty to use the real weather.
+    override: (['rain', 'clear'].includes(process.env.WEATHER_OVERRIDE ?? '') ? process.env.WEATHER_OVERRIDE : '') as 'rain' | 'clear' | '',
+  },
   dispatch: { offerSeconds: 15, wavesKm: [5, 10, 20], maxOffersPerWave: 10 },
   maxTripKm: 80,
   mail: {

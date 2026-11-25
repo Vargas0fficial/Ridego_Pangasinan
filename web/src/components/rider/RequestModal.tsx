@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MapPin, Navigation, Star } from 'lucide-react';
+import { CloudRain, MapPin, Navigation, Star } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useApp } from '@/context/AppContext';
 import { fmtClock, fmtKm, peso } from '@/lib/format';
@@ -99,6 +99,16 @@ export function RequestModal({ offer, onAccepted }: { offer: Offer; onAccepted: 
           <div className="font-display font-extrabold text-primary-strong">{peso(offer.riderEarning)}</div>
         </div>
       </div>
+
+      {offer.raincoat && (
+        <div className="mt-3 flex items-start gap-2.5 rounded-2xl bg-primary-soft p-3 text-primary-strong">
+          <CloudRain size={20} className="mt-0.5 flex-none" />
+          <div className="text-[13px]">
+            <div className="font-bold">Raincoat requested</div>
+            It is raining at the pickup. Bring a raincoat for the passenger. The ₱49 is already in your earnings.
+          </div>
+        </div>
+      )}
 
       <button className="btn mt-4" onClick={accept} disabled={!!busy || left <= 0}>
         {busy === 'accept' ? <Spinner /> : 'Accept Ride'}

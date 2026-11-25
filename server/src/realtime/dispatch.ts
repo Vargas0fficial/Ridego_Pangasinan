@@ -18,6 +18,7 @@ export type Offer = {
   durationMin: number;
   fare: number;
   riderEarning: number;
+  raincoat: boolean;
   toPickupKm: number;
   geometry: LatLngTuple[];
 };
@@ -115,6 +116,7 @@ async function runWave(st: State): Promise<void> {
         durationMin: ride.durationMin,
         fare: ride.fare,
         riderEarning: ride.riderEarning,
+        raincoat: !!ride.raincoat,
         toPickupKm: Math.round(c.km * 10) / 10,
         geometry: ride.geometry,
       };

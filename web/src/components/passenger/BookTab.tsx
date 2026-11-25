@@ -30,9 +30,12 @@ export function BookTab({ initialDest, onConsumedDest }: { initialDest: Place | 
   const [busy, setBusy] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [raincoat, setRaincoat] = useState(false);
 
   const { quote, loading: quoting, error: quoteError } = useQuote(pickup, dropoff, !ride);
   const nearby = useNearbyRiders(!ride ? pickup : null);
+  // The raincoat only exists while it is raining at the pickup.
+  const raincoatOn = raincoat && !!quote?.raining;
 
   // Destination chosen on the Home tab.
   useEffect(() => {
@@ -65,8 +68,9 @@ export function BookTab({ initialDest, onConsumedDest }: { initialDest: Place | 
 
   const book = () =>
     run(async () => {
-      const r = await api<{ ride: Ride }>('/api/rides', { body: { pickup, dropoff, paymentMethod: 'cash' } });
+      const r = await api<{ ride: Ride }>('/api/rides', { body: { pickup, dropoff, paymentMethod: 'cash', raincoat: raincoatOn } });
       setRide(r.ride);
+      setRaincoat(false);
     });
 
   const cancelRide = () =>
@@ -148,6 +152,8 @@ export function BookTab({ initialDest, onConsumedDest }: { initialDest: Place | 
           quoting={quoting}
           quoteError={quoteError}
           nearbyCount={nearby.length}
+          raincoat={raincoatOn}
+          onRaincoat={setRaincoat}
           busy={busy}
           onPickPickup={() => setPicking('pickup')}
           onPickDropoff={() => setPicking('dropoff')}

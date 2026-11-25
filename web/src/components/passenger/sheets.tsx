@@ -1,6 +1,6 @@
 'use client';
 
-import { Banknote, MessageCircle, Phone, ShieldCheck } from 'lucide-react';
+import { Banknote, CloudRain, MessageCircle, Phone, ShieldCheck } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { fmtKm, peso } from '@/lib/format';
 import type { Place, Quote, Ride } from '@/lib/types';
@@ -15,6 +15,8 @@ type Draft = {
   quoting: boolean;
   quoteError: string;
   nearbyCount: number;
+  raincoat: boolean;
+  onRaincoat: (on: boolean) => void;
   busy: boolean;
   onPickPickup: () => void;
   onPickDropoff: () => void;
@@ -23,6 +25,8 @@ type Draft = {
 };
 
 export function BookingSheet(d: Draft) {
+  const rainPrice = d.quote?.raincoatPrice ?? 49;
+  const total = d.quote ? d.quote.fare + (d.raincoat ? rainPrice : 0) : 0;
   return (
     <Sheet>
       <h2 className="font-display text-xl font-extrabold tracking-tight">Where to?</h2>
@@ -66,7 +70,8 @@ export function BookingSheet(d: Draft) {
               <div className="flex items-end justify-between">
                 <div>
                   <div className="sec-title">Estimated fare</div>
-                  <div className="font-display text-[34px] font-extrabold leading-none text-primary-strong">{peso(d.quote.fare)}</div>
+                  <div className="font-display text-[34px] font-extrabold leading-none text-primary-strong">{peso(total)}</div>
+                  {d.raincoat && <div className="mt-1 text-xs font-semibold text-muted">includes {peso(rainPrice)} raincoat</div>}
                 </div>
                 <div className="text-right text-sm text-muted">
                   <div className="font-semibold text-fg">{d.quote.distanceKm.toFixed(1)} km</div>
@@ -81,8 +86,28 @@ export function BookingSheet(d: Draft) {
               </div>
             </div>
           )}
+          {d.quote?.raining && !d.quoting && (
+            <button
+              type="button"
+              role="switch"
+              aria-checked={d.raincoat}
+              onClick={() => d.onRaincoat(!d.raincoat)}
+              className={`mt-3 flex w-full items-center gap-3 rounded-2xl border-[1.5px] p-3 text-left transition ${d.raincoat ? 'border-primary bg-primary-soft' : 'border-line bg-surface2'}`}
+            >
+              <span className="grid h-10 w-10 flex-none place-items-center rounded-xl bg-surface text-primary-strong">
+                <CloudRain size={22} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-bold">It's raining near your pickup</span>
+                <span className="block text-[13px] text-muted">Add a raincoat (kapote) for {peso(rainPrice)}. Your rider brings one for you.</span>
+              </span>
+              <span className={`relative h-7 w-12 flex-none rounded-full transition ${d.raincoat ? 'bg-primary' : 'bg-line'}`} aria-hidden>
+                <span className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all ${d.raincoat ? 'left-[22px]' : 'left-0.5'}`} />
+              </span>
+            </button>
+          )}
           <button className="btn mt-3" onClick={d.onConfirm} disabled={!d.quote || d.quoting || d.busy}>
-            {d.busy ? <Spinner /> : d.quote ? `Confirm ride · ${peso(d.quote.fare)}` : 'Confirm ride'}
+            {d.busy ? <Spinner /> : d.quote ? `Confirm ride · ${peso(total)}` : 'Confirm ride'}
           </button>
         </div>
       )}
@@ -111,6 +136,11 @@ export function SearchingSheet({ ride, busy, onCancel }: { ride: Ride; busy: boo
           <span className="text-muted">Fare (cash)</span>
           <span>{peso(ride.fare)}</span>
         </div>
+        {ride.raincoat && (
+          <div className="mt-2 flex items-center gap-1.5 text-[13px] font-semibold text-primary-strong">
+            <CloudRain size={15} /> Raincoat included
+          </div>
+        )}
       </div>
       <button className="btn btn-cancel mt-3" onClick={onCancel} disabled={busy}>
         {busy ? <Spinner /> : 'Cancel request'}
@@ -172,7 +202,7 @@ export function TripSheet({
       </div>
 
       <div className="card flex items-center gap-3">
-          <Avatar name={rider.name} photo={rider.photo} size={52} zoomable />
+        <Avatar name={rider.name} photo={rider.photo} size={52} zoomable />
         <div className="min-w-0 flex-1">
           <div className="truncate font-display font-bold">{rider.name}</div>
           <Rating value={rider.rating} count={rider.completedRides} />
@@ -198,7 +228,14 @@ export function TripSheet({
       <div className="card mt-2.5">
         <RouteLines ride={ride} />
         <div className="mt-3 flex justify-between border-t border-line pt-3 text-sm">
-          <span className="text-muted">{fmtKm(ride.distanceKm)} · Cash</span>
+          <span className="text-muted">
+            {fmtKm(ride.distanceKm)} · Cash
+            {ride.raincoat && (
+              <span className="ml-1.5 inline-flex items-center gap-1 font-semibold text-primary-strong">
+                <CloudRain size={14} /> Raincoat included
+              </span>
+            )}
+          </span>
           <span className="font-display text-lg font-extrabold">{peso(ride.fare)}</span>
         </div>
       </div>

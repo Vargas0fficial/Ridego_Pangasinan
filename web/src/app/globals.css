@@ -210,6 +210,20 @@ body {
 .leaflet-control-attribution {
   font-size: 10px;
 }
+/* Night map: dark tiles after sunset (see lib/night.ts), even when the phone itself is in light mode. */
+.map-night .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.92) saturate(0.7);
+}
+.map-night .leaflet-container {
+  background: #0e1f18;
+}
+.map-night .leaflet-control-attribution {
+  background: rgba(14, 31, 24, 0.75);
+  color: #9fb8a9;
+}
+.map-night .leaflet-control-attribution a {
+  color: #43db93;
+}
 
 @keyframes rg-radar {
   0% {

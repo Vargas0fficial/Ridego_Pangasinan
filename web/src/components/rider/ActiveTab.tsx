@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Flag, MapPinCheck, MessageCircle, Phone, Play } from 'lucide-react';
+import { CloudRain, Flag, MapPinCheck, MessageCircle, Phone, Play } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useApp } from '@/context/AppContext';
 import { etaMinutes, remainingKm } from '@/lib/geo';
@@ -83,6 +83,11 @@ export function ActiveTab() {
 
           <div className="card mt-2.5">
             <RouteLines ride={ride} />
+            {ride.raincoat && (
+              <div className="mt-3 flex items-center gap-2 rounded-xl bg-primary-soft px-3 py-2 text-[13px] font-bold text-primary-strong">
+                <CloudRain size={16} /> Passenger needs a raincoat. Bring it to the pickup.
+              </div>
+            )}
             <div className="mt-3 border-t border-line pt-3 text-sm text-muted">
               {fmtKm(ride.distanceKm)} · Fare {peso(ride.fare)} ({ride.paymentMethod === 'cash' ? 'collect cash' : 'paid online'})
             </div>

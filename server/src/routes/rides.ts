@@ -7,6 +7,7 @@ import { requireAuth } from '../lib/auth';
 import { HttpError, h } from '../lib/errors';
 import { fareFor, haversineKm, inServiceArea, routeBetween, serviceFeeFor, type LatLng } from '../lib/geo';
 import { serializeRide } from '../lib/serialize';
+import { isRaining } from '../lib/weather';
 import { ACTIVE_STATUSES, Ride, WITH_RIDER_STATUSES } from '../models/Ride';
 import { User, type UserDoc } from '../models/User';
 import { canAccept, declineOffer, startDispatch, stopDispatch } from '../realtime/dispatch';
@@ -22,23 +23,32 @@ const placeS = z.object({
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
 });
-const quoteS = z.object({ pickup: placeS, dropoff: placeS, paymentMethod: z.enum(['cash', 'online']).default('cash') });
+const quoteS = z.object({
+  pickup: placeS,
+  dropoff: placeS,
+  paymentMethod: z.enum(['cash', 'online']).default('cash'),
+  raincoat: z.boolean().default(false),
+});
 
 const oid = (value: string): Types.ObjectId => {
   if (!Types.ObjectId.isValid(value)) throw new HttpError(400, 'Invalid ride id');
   return new Types.ObjectId(value);
 };
 
-async function buildQuote(pickup: LatLng, dropoff: LatLng) {
+async function buildQuote(pickup: LatLng, dropoff: LatLng, raincoat = false) {
   if (!inServiceArea(pickup) || !inServiceArea(dropoff)) {
     throw new HttpError(400, 'RideGo Pangasinan serves trips inside Pangasinan only');
   }
   if (haversineKm(pickup, dropoff) < 0.15) throw new HttpError(400, 'Pickup and destination are too close together');
   const route = await routeBetween(pickup, dropoff);
   if (route.distanceKm > config.maxTripKm) throw new HttpError(400, `Trips are limited to ${config.maxTripKm} km`);
-  const fare = fareFor(route.distanceKm);
-  const serviceFee = serviceFeeFor(fare);
-  return { ...route, fare, serviceFee, riderEarning: fare - serviceFee };
+  const raining = await isRaining(pickup);
+  if (raincoat && !raining) throw new HttpError(409, 'The raincoat is only offered when it is raining at your pickup.');
+  const baseFare = fareFor(route.distanceKm);
+  const serviceFee = serviceFeeFor(baseFare);
+  // The raincoat price goes to the rider in full, with no service fee taken from it.
+  const extra = raincoat ? config.raincoatPrice : 0;
+  return { ...route, raining, raincoat, baseFare, fare: baseFare + extra, serviceFee, riderEarning: baseFare - serviceFee + extra };
 }
 
 async function releaseRider(ride: { rider?: Types.ObjectId | null }): Promise<void> {
@@ -55,7 +65,15 @@ ridesRouter.post(
   h(async (req, res) => {
     const b = quoteS.parse(req.body);
     const q = await buildQuote(b.pickup, b.dropoff);
-    res.json({ distanceKm: q.distanceKm, durationMin: q.durationMin, fare: q.fare, geometry: q.geometry, source: q.source });
+    res.json({
+      distanceKm: q.distanceKm,
+      durationMin: q.durationMin,
+      fare: q.fare,
+      geometry: q.geometry,
+      source: q.source,
+      raining: q.raining,
+      raincoatPrice: config.raincoatPrice,
+    });
   }),
 );
 
@@ -67,7 +85,7 @@ ridesRouter.post(
     const b = quoteS.parse(req.body);
     const existing = await Ride.findOne({ passenger: user._id, status: { $in: ACTIVE_STATUSES } }).select('_id');
     if (existing) throw new HttpError(409, 'You already have a ride in progress');
-    const q = await buildQuote(b.pickup, b.dropoff);
+    const q = await buildQuote(b.pickup, b.dropoff, b.raincoat);
     const ride = await Ride.create({
       passenger: user._id,
       pickup: b.pickup,
@@ -77,6 +95,7 @@ ridesRouter.post(
       fare: q.fare,
       serviceFee: q.serviceFee,
       riderEarning: q.riderEarning,
+      raincoat: q.raincoat,
       paymentMethod: b.paymentMethod,
       status: 'searching',
       pin: String(crypto.randomInt(1000, 10000)),

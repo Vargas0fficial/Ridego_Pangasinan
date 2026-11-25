@@ -34,6 +34,8 @@ export type Ride = {
   fare: number;
   serviceFee: number;
   riderEarning: number;
+  /** The passenger added a raincoat. fare and riderEarning already include its price. */
+  raincoat?: boolean;
   paymentMethod: 'cash' | 'online';
   geometry: LatLngT[];
   approach: { geometry: LatLngT[]; distanceKm: number; durationMin: number } | null;
@@ -59,11 +61,21 @@ export type Offer = {
   durationMin: number;
   fare: number;
   riderEarning: number;
+  raincoat?: boolean;
   toPickupKm: number;
   geometry: LatLngT[];
 };
 
-export type Quote = { distanceKm: number; durationMin: number; fare: number; geometry: LatLngT[]; source: 'osrm' | 'estimate' };
+export type Quote = {
+  distanceKm: number;
+  durationMin: number;
+  fare: number;
+  geometry: LatLngT[];
+  source: 'osrm' | 'estimate';
+  /** Raining at the pickup right now, so a raincoat can be offered. */
+  raining?: boolean;
+  raincoatPrice?: number;
+};
 
 export type Earnings = {
   today: { earnings: number; trips: number };
