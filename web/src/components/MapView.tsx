@@ -6,7 +6,6 @@ import 'leaflet/dist/leaflet.css';
 import { LocateFixed } from 'lucide-react';
 import { MapContainer, Marker, Polyline, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import type { LatLngT } from '@/lib/types';
-import { useNight } from '@/lib/night';
 import { DEFAULT_CENTER } from '@/lib/places';
 import { motoSvg } from './ScooterIcon';
 
@@ -106,7 +105,6 @@ function Taps({ onTap }: { onTap: (p: MapPoint) => void }) {
 
 export default function MapView({ pickup, dropoff, route, approach, riders = [], rider, me, fitKey = 'init', padBottom = 0, onTap, interactive = true }: MapViewProps) {
   const [following, setFollowing] = useState(true);
-  const night = useNight();
   useEffect(() => setFollowing(true), [fitKey]);
 
   const points = useMemo(() => {
@@ -123,7 +121,7 @@ export default function MapView({ pickup, dropoff, route, approach, riders = [],
   const bigRider = useMemo(() => riderIcon(false), []);
 
   return (
-    <div className={`relative h-full w-full${night ? ' map-night' : ''}`}>
+      <div className="relative h-full w-full">
       <MapContainer
         center={[DEFAULT_CENTER.lat, DEFAULT_CENTER.lng]}
         zoom={13}
