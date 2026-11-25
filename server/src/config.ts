@@ -18,7 +18,7 @@ export const config = {
     .map((s) => s.trim())
     .filter(Boolean),
   osrmUrl: (process.env.OSRM_URL ?? 'https://router.project-osrm.org').replace(/\/$/, ''),
-  fare: { base: 40, perKm: 11.5, min: 50, serviceFeeRate: 0.15 },
+    fare: { base: 25, perKm: 7, min: 35, serviceFeeRate: 0.15 },
   /** Optional raincoat (kapote) the rider brings when it is raining at the pickup. The rider keeps all of it. */
   raincoatPrice: 49,
   weather: {

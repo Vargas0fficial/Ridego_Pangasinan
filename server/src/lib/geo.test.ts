@@ -7,12 +7,12 @@ test('Dagupan to Calasiao is about 4.3 km in a straight line', () => {
   assert.ok(km > 4.1 && km < 4.5, `got ${km}`);
 });
 
-test('fare for a 4.8 km trip is P95', () => {
-  assert.equal(fareFor(4.8), 95);
+test('fare for a 4.8 km trip is P60', () => {
+  assert.equal(fareFor(4.8), 60);
 });
 
-test('fare never goes below the P50 minimum', () => {
-  assert.equal(fareFor(0.3), 50);
+test('fare never goes below the P35 minimum', () => {
+  assert.equal(fareFor(0.3), 35);
 });
 
 test('service fee is 15 percent, rounded', () => {

@@ -50,7 +50,7 @@ export default function Landing() {
 
         <ul className="mt-10 grid gap-3 sm:grid-cols-3">
           {[
-            { icon: Wallet, t: 'Fair fares', s: '₱40 base + ₱11.50 per km' },
+            { icon: Wallet, t: 'Fair fares', s: '₱25 base + ₱7 per km' },
             { icon: ShieldCheck, t: 'Built-in safety', s: 'Trip PIN, live trip link, SOS' },
             { icon: ScooterIcon, t: 'Live tracking', s: 'Watch your rider on the map' },
           ].map(({ icon: Icon, t, s }) => (
