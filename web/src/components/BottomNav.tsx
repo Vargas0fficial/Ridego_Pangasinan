@@ -1,8 +1,8 @@
 'use client';
 
-import type { LucideIcon } from 'lucide-react';
+import type { ComponentType } from 'react';
 
-export type NavItem<T extends string> = { id: T; label: string; icon: LucideIcon; badge?: number };
+export type NavItem<T extends string> = { id: T; label: string; icon: ComponentType<{ size?: number; strokeWidth?: number }>; badge?: number };
 
 export function BottomNav<T extends string>({ items, active, onChange }: { items: NavItem<T>[]; active: T; onChange: (id: T) => void }) {
   return (

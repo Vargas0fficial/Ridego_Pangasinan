@@ -17,3 +17,8 @@ export function ScooterIcon({ size = 24, className = '' }: { size?: number; clas
     </svg>
   );
 }
+
+/** Motorcycle for the bottom navigation. Takes the same `size` prop as the Lucide icons next to it. */
+export function MotoNavIcon({ size = 21 }: { size?: number; strokeWidth?: number }) {
+  return <ScooterIcon size={Math.round(size * 0.86)} />;
+}

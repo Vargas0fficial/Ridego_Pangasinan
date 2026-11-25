@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Car, Flag, MapPinCheck, MessageCircle, Phone, Play } from 'lucide-react';
+import { Flag, MapPinCheck, MessageCircle, Phone, Play } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useApp } from '@/context/AppContext';
 import { etaMinutes, remainingKm } from '@/lib/geo';
@@ -9,6 +9,7 @@ import { fmtKm, peso } from '@/lib/format';
 import { ChatModal } from '../ChatModal';
 import { RatingForm } from '../RatingForm';
 import { RideMap } from '../RideMap';
+import { ScooterIcon } from '../ScooterIcon';
 import { RouteLines } from '../RideCards';
 import { Avatar, EmptyState, Modal, Rating, Sheet, Spinner } from '../ui';
 
@@ -38,7 +39,7 @@ export function ActiveTab() {
     });
 
   if (!ride || !['accepted', 'arrived', 'ongoing', 'completed'].includes(ride.status)) {
-    return <EmptyState icon={<Car size={28} />} title="No active ride" text="Accept a request and it will show up here with the route and trip steps." />;
+    return <EmptyState icon={<ScooterIcon size={26} />} title="No active ride" text="Accept a request and it will show up here with the route and trip steps." />;
   }
 
   let etaMin: number | null = null;
@@ -68,7 +69,7 @@ export function ActiveTab() {
 
           {ride.passenger && (
             <div className="card flex items-center gap-3">
-                            <Avatar name={ride.passenger.name} photo={ride.passenger.photo} size={52} zoomable />
+              <Avatar name={ride.passenger.name} photo={ride.passenger.photo} size={52} zoomable />
               <div className="min-w-0 flex-1">
                 <div className="truncate font-display font-bold">{ride.passenger.name}</div>
                 <Rating value={ride.passenger.rating} />

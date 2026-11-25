@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Car, Home, Inbox, User, Wallet } from 'lucide-react';
+import { Home, Inbox, User, Wallet } from 'lucide-react';
 import { BottomNav, type NavItem } from '@/components/BottomNav';
 import { Header } from '@/components/Header';
+import { MotoNavIcon } from '@/components/ScooterIcon';
 import { ProfileTab } from '@/components/ProfileTab';
 import { ActiveTab } from '@/components/rider/ActiveTab';
 import { EarningsTab } from '@/components/rider/EarningsTab';
@@ -50,7 +51,7 @@ export default function RiderPage() {
   const nav: NavItem<Tab>[] = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'requests', label: 'Requests', icon: Inbox, badge: offers.length || undefined },
-    { id: 'active', label: 'Active Ride', icon: Car, badge: unreadChat || (hasRide ? 1 : undefined) },
+    { id: 'active', label: 'Active Ride', icon: MotoNavIcon, badge: unreadChat || (hasRide ? 1 : undefined) },
     { id: 'earnings', label: 'Earnings', icon: Wallet },
     { id: 'profile', label: 'Profile', icon: User },
   ];

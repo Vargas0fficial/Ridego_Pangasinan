@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Car, Home, MessageCircle, Receipt, User } from 'lucide-react';
+import { Home, MessageCircle, Receipt, User } from 'lucide-react';
 import { BottomNav, type NavItem } from '@/components/BottomNav';
 import { Header } from '@/components/Header';
+import { MotoNavIcon } from '@/components/ScooterIcon';
 import { BookTab } from '@/components/passenger/BookTab';
 import { HomeTab } from '@/components/passenger/HomeTab';
 import { MessagesTab } from '@/components/passenger/MessagesTab';
@@ -18,7 +19,7 @@ type Tab = 'home' | 'book' | 'rides' | 'messages' | 'profile';
 
 const NAV: NavItem<Tab>[] = [
   { id: 'home', label: 'Home', icon: Home },
-  { id: 'book', label: 'Book', icon: Car },
+  { id: 'book', label: 'Book', icon: MotoNavIcon },
   { id: 'rides', label: 'Rides', icon: Receipt },
   { id: 'messages', label: 'Messages', icon: MessageCircle },
   { id: 'profile', label: 'Profile', icon: User },
